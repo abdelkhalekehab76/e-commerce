@@ -1,21 +1,37 @@
-import axios from "axios";
-import React, { useState } from "react";
-import useSWR from "swr";
-import CartComponent from "../Components/CartComponent";
+import { useQuery } from '@tanstack/react-query'
+import React, { useContext, useState } from 'react'
+import { getProducts } from '../APIs/products_ApIs'
+import ProductCard from '../Components/ProductCard';
+import Loading from '../Components/Loading';
+import { getWishlist } from '../APIs/wishlist';
+import { UserContext } from '../context/UserContext';
+
 
 export default function Products() {
-    const fetcher = (url) => axios.get(url).then((res) => res.data.data);
 
-    const { data, error, isLoading } = useSWR(
-        "https://ecommerce.routemisr.com/api/v1/products",
-        fetcher,
+    const { userToken } = useContext(UserContext)
+    const { data: products, isLoading: isProductsLoading } = useQuery({
+        queryKey: ['products'],
+        queryFn: getProducts,
+        enabled: !!userToken
+    })
+
+    const { data: wishListData, isLoading: wishlistIsLoading } = useQuery({
+        queryKey: ["wishlistProducts"],
+        queryFn: getWishlist,
+        enabled: !!userToken
+    });
+    const wishlistProducts = wishListData?.data?.data || [];
+
+    const wishlistIds = new Set(
+        wishlistProducts.map((item) => item._id) || []
     );
 
-    console.log(data);
-
+    
     const [searchTerm, setSearchTerm] = useState("");
 
-    const filteredProducts = data?.filter((product) => {
+
+    const filteredProducts = products?.data?.data?.filter((product) => {
         const titleMatch = product.title
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase());
@@ -26,8 +42,11 @@ export default function Products() {
     });
 
 
+    // console.log(data.data.data)
+
     return (
         <>
+
             <div className="container mx-auto px-4 py-8" dir="ltr">
                 <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">
                     Latest Products
@@ -60,18 +79,9 @@ export default function Products() {
                     </div>
                 </div>
 
-                {isLoading ? (
+                {isProductsLoading ? (
                     // Loading State
-                    <div className="flex justify-center items-center h-40">
-                        <h2 className="text-xl font-semibold animate-pulse text-emerald-600">
-                            Loading products...
-                        </h2>
-                    </div>
-                ) : error ? (
-                    // Error State
-                    <div className="text-center text-red-500 font-semibold my-8">
-                        <h2>Oops! Something went wrong while fetching data.</h2>
-                    </div>
+                    <Loading />
                 ) : (
                     // Products Grid
                     <>
@@ -86,7 +96,7 @@ export default function Products() {
                             // نقوم بعمل map على الـ filteredProducts وليس الـ data مباشرة
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                                 {filteredProducts?.map((product) => (
-                                    <CartComponent key={product.id} product={product} />
+                                    <ProductCard key={product.id} product={product} wishlistIds={wishlistIds} />
                                 ))}
                             </div>
                         )}
@@ -94,5 +104,5 @@ export default function Products() {
                 )}
             </div>
         </>
-    );
+    )
 }

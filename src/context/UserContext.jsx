@@ -1,14 +1,31 @@
-import { createContext } from "react";
+import { createContext, useState } from "react";
+import { loginApi } from "../APIs/auth_APIs";
+import toast from "react-hot-toast";
+import { useMutation } from "@tanstack/react-query";
 
 export const UserContext = createContext();
 
 export default function UserContextProvider({ children }) {
+    const [userToken, setUserToken] = useState(() => localStorage.getItem("userToken"))
 
-const userToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMzEyZmUxZmMzM2Q4MDAxMjFkNjc1OSIsIm5hbWUiOiJhYmRlbGtoYWxlayIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzgxNjA4NTAwLCJleHAiOjE3ODkzODQ1MDB9.sW8cqNR4FCDhfGuiP9Le996mFFS1PWXzq8NaeKBadcE"
+    const { mutate: loginMutation, data: userData, isPending: loginIsPending, isError: loginIsError, error: loginError } = useMutation({
+        mutationFn: loginApi,
+
+        onSuccess: (data) => {
+            // console.log(data)
+            // console.log(data.data.token)
+            setUserToken(data.data.token)
+            localStorage.setItem('userToken', data.data.token)
+            toast.success('Login Success')
+        },
+        onError: (err) => {
+            console.log(err.response.data.message)
+        }
+    })
 
 
     return (
-        <UserContext.Provider value={{userToken}}>
+        <UserContext.Provider value={{ loginMutation, userData, userToken, setUserToken, loginIsPending, loginIsError, loginError }}>
             {children}
         </UserContext.Provider>
     )

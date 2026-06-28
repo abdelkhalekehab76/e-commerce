@@ -12,7 +12,7 @@ import Brands from './Pages/Brands'
 import BrandDetails from './Pages/BrandDetails'
 import Wishlist from './Pages/Wishlist'
 import Login from './Pages/Login'
-import ProtectedRoute from './Layout/protectedRoute'
+import ProtectedRoute from './Layout/ProtectedRoute'
 import AuthProtectedRoute from './Layout/AuthProtectedRoute'
 
 export default function App() {

@@ -21,7 +21,7 @@ export default function Wishlist() {
     const wishlistProducts = wishListData?.data?.data || [];
 
 
-    const { mutate: removeFromWishlistMutation, data: wishListAfterRemoveItem, isPending: removePending } = useMutation({
+    const { mutate: removeFromWishlistMutation, isPending: removePending } = useMutation({
         mutationFn: removeFromWishlist,
 
         onSuccess: (data) => {

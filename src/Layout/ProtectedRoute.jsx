@@ -4,7 +4,7 @@ import { UserContext } from '../context/UserContext';
 
 export default function ProtectedRoute({ children }) {
     const { userToken } = useContext(UserContext);
-    console.log(userToken)
+    // console.log(userToken)
 
     return userToken ? children : <Navigate to={'/login'} replace/>
 }

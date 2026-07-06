@@ -1,16 +1,22 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import React, { useContext, useState } from 'react'
-import { clearCart, getCart, removeProductFomCart, updateProduct } from '../APIs/cart_APIs'
+import React, { useContext, useRef, useState } from 'react'
+import { checkout, clearCart, getCart, removeProductFomCart, updateProduct } from '../APIs/cart_APIs'
 import toast from 'react-hot-toast'
 import { queryClient } from '../main'
-import { Spinner } from '@heroui/react'
+import { FieldError, Input, Label, Spinner, TextField } from '@heroui/react'
 import { BiLoader } from 'react-icons/bi'
 import ProductCard from '../Components/ProductCard'
 import Loading from '../Components/Loading'
 import { UserContext } from '../context/UserContext'
 import { Button, Modal } from "@heroui/react";
+import { useNavigate } from 'react-router-dom'
 
 export default function Cart() {
+
+    const userDetails = useRef()
+    const userPhone = useRef()
+    const userCity = useRef()
+    const navigate = useNavigate()
 
     const [productId, setProductId] = useState()
     const { userToken } = useContext(UserContext)
@@ -21,6 +27,8 @@ export default function Cart() {
         enabled: !!userToken
     })
     const products = cartProductsData?.data.data.products
+    const cartId = cartProductsData?.data.cartId
+    // console.log(cartId)
     console.log(products)
 
     const { mutate: deleteProductFromCartMutation, isPending: deleteProductIsPending } = useMutation({
@@ -67,6 +75,29 @@ export default function Cart() {
         }
     })
 
+    const { mutate: checkoutMutate } = useMutation({
+        mutationFn: checkout,
+
+        onSuccess: (data) => {
+            console.log(data.data.session.url)
+            window.location.href = data.data.session.url;
+        },
+
+        onError:()=>{
+            toast.error('some thing has wrong')
+        }
+    })
+
+    const handleCheckout = () => {
+        const shippingAddress = {
+            details: userDetails.current.value,
+            phone: userPhone.current.value,
+            city: userCity.current.value,
+        }
+
+        checkoutMutate({cartId,shippingAddress})
+    }
+
     return (
         <>
             <div className="container mx-auto p-4 md:p-8 bg-gray-50 min-h-screen font-sans" dir="ltr">
@@ -108,7 +139,7 @@ export default function Cart() {
                                         {/* Quantity Counter */}
                                         <div className={`flex items-center border border-gray-200 rounded-lg bg-gray-50 overflow-hidden shadow-sm relative z-10`}>
 
-                                            {updateProductIsPending && productId == product.product._id ? <div className="loader absolute inset-0 cursor-not-allowed bg-amber-400/80 flex justify-center items-center z-50">
+                                            {updateProductIsPending && productId == product.product._id ? <div className="loader absolute inset-0 cursor-not-allowed bg-white/80 flex justify-center items-center z-50">
                                                 <BiLoader />
                                             </div> : null}
 
@@ -209,13 +240,42 @@ export default function Cart() {
                                             <Modal.Heading>Welcome to HeroUI</Modal.Heading>
                                         </Modal.Header>
                                         <Modal.Body>
-                                            <p>
-                                                A beautiful, fast, and modern React UI library for building accessible and
-                                                customizable web applications with ease.
-                                            </p>
+                                            <TextField
+                                                isRequired
+                                                name="details"
+                                                type="text"
+                                                variant='secondary'
+                                            >
+                                                <Label>Details</Label>
+                                                <Input ref={userDetails} placeholder="" />
+                                                <FieldError />
+                                            </TextField>
+                                            <TextField
+                                                isRequired
+                                                name="phone"
+                                                type="text"
+                                                variant='secondary'
+                                            >
+                                                <Label>Phone</Label>
+                                                <Input ref={userPhone} placeholder="" />
+                                                <FieldError />
+                                            </TextField>
+                                            <TextField
+                                                isRequired
+                                                name="city"
+                                                type="text"
+                                                variant='secondary'
+                                            >
+                                                <Label>City</Label>
+                                                <Input ref={userCity} placeholder="" />
+                                                <FieldError />
+                                            </TextField>
                                         </Modal.Body>
                                         <Modal.Footer>
-                                            <Button className="w-full" slot="close">
+                                            <Button
+                                                className="w-full" slot="close"
+                                                onClick={()=>handleCheckout()}
+                                            >
                                                 Continue
                                             </Button>
                                         </Modal.Footer>

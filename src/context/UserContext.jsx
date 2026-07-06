@@ -1,7 +1,7 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { loginApi } from "../APIs/auth_APIs";
 import toast from "react-hot-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const UserContext = createContext();
 
@@ -12,8 +12,6 @@ export default function UserContextProvider({ children }) {
         mutationFn: loginApi,
 
         onSuccess: (data) => {
-            // console.log(data)
-            // console.log(data.data.token)
             setUserToken(data.data.token)
             localStorage.setItem('userToken', data.data.token)
             toast.success('Login Success')

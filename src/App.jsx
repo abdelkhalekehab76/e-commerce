@@ -14,6 +14,8 @@ import Wishlist from './Pages/Wishlist'
 import Login from './Pages/Login'
 import ProtectedRoute from './Layout/ProtectedRoute'
 import AuthProtectedRoute from './Layout/AuthProtectedRoute'
+import AllOrders from './Pages/AllOrders'
+import NotFound from './Pages/NotFound'
 
 export default function App() {
 
@@ -32,7 +34,9 @@ export default function App() {
         { path: "cart", element: <ProtectedRoute><Cart /></ProtectedRoute> },
         { path: "wish-list", element: <ProtectedRoute><Wishlist /></ProtectedRoute> },
         { path: "contact-us", element: <ContactUs /> },
-        { path: "login", element: <AuthProtectedRoute><Login /></AuthProtectedRoute> }
+        { path: "login", element: <AuthProtectedRoute><Login /></AuthProtectedRoute> },
+        { path: "allorders", element: <ProtectedRoute><AllOrders/></ProtectedRoute> },
+        { path: "*", element: <NotFound/> },
       ]
     },
   ])

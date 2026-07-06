@@ -36,3 +36,22 @@ export const clearCart = async () => {
         }
     })
 }
+
+
+export const checkout = async ({cartId,shippingAddress}) => {
+    return axios.post(`https://ecommerce.routemisr.com/api/v1/orders/checkout-session/${cartId}?url=http://localhost:3000`,shippingAddress, {
+        headers: {
+            token: localStorage.getItem('userToken')
+        }
+    })
+}
+
+export const getAllOrders = async (ownerId) => {
+    return axios.get(`https://ecommerce.routemisr.com/api/v1/orders/user/${ownerId}`, {
+        headers: {
+            token: localStorage.getItem('userToken')
+        }
+    })
+}
+
+

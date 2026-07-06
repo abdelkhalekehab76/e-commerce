@@ -46,7 +46,7 @@ export default function ProductCard({ product, wishlistIds }) {
 
 
 
-  const { mutate: addToWishlistMutation } = useMutation({
+  const { mutate: addToWishlistMutation, isPending: isAddToWishlistPending } = useMutation({
     mutationFn: (productData) => {
       return addToWishlist(productData)
     },
@@ -60,7 +60,7 @@ export default function ProductCard({ product, wishlistIds }) {
     },
 
     onError: (error) => {
-      toast.error(error.message)
+      toast.error(error.response.data.message)
     }
   });
 
@@ -72,8 +72,10 @@ export default function ProductCard({ product, wishlistIds }) {
 
 
 
-  const { mutate: removeFromWishlistMutation } = useMutation({
-    mutationFn: removeFromWishlist,
+  const { mutate: removeFromWishlistMutation, isPending: isRemoveFromWishlistPending } = useMutation({
+    mutationFn: (productData)=>{
+      return removeFromWishlist(productData)
+    },
 
     onSuccess: (data) => {
       console.log(data)
@@ -117,16 +119,22 @@ export default function ProductCard({ product, wishlistIds }) {
 
             {/* Wishlist */}
             {isInWishlist ? (
-              <button className="absolute top-4 right-4 bg-white shadow-md rounded-full p-2 hover:scale-110 transition"
-                onClick={() => handleRemoveFromWishlist(product._id)}
+              <button
+                disabled={isRemoveFromWishlistPending}
+                className="absolute top-4 right-4 bg-white shadow-md rounded-full p-2 hover:scale-110 transition"
+                onClick={() => {
+                  handleRemoveFromWishlist(product._id)
+                }}
               >
                 <HiHeart className="text-red-500 text-xl" />
               </button>
             ) : (
               <button
-                onClick={() =>
-                  handleAddToWishlist({ productId: product._id })
-                }
+                disabled={isAddToWishlistPending}
+                onClick={() => {
+                  handleAddToWishlist({productId:product._id})
+                  console.log(product._id)
+                }}
                 className="absolute top-4 right-4 bg-white shadow-md rounded-full p-2 hover:scale-110 transition"
               >
                 <BiHeart className="text-gray-400 text-xl" />
@@ -170,7 +178,7 @@ export default function ProductCard({ product, wishlistIds }) {
                   handleAddToCart({ productId: product._id })
                 }
                 }
-                disabled={isAddToCartPending && selectedProductId == product._id}
+                disabled={isAddToCartPending}
                 className="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-5 py-2 rounded-xl font-medium hover:scale-105 transition flex justify-center items-center space-x-2"
               >
                 <span>Add</span>

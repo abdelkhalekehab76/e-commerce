@@ -16,7 +16,6 @@ export default function Cart() {
     const userDetails = useRef()
     const userPhone = useRef()
     const userCity = useRef()
-    const navigate = useNavigate()
 
     const [productId, setProductId] = useState()
     const { userToken } = useContext(UserContext)
@@ -75,7 +74,7 @@ export default function Cart() {
         }
     })
 
-    const { mutate: checkoutMutate } = useMutation({
+    const { mutate: checkoutMutate,isPending:checkoutISPending } = useMutation({
         mutationFn: checkout,
 
         onSuccess: (data) => {
@@ -83,7 +82,7 @@ export default function Cart() {
             window.location.href = data.data.session.url;
         },
 
-        onError:()=>{
+        onError: () => {
             toast.error('some thing has wrong')
         }
     })
@@ -95,8 +94,21 @@ export default function Cart() {
             city: userCity.current.value,
         }
 
-        checkoutMutate({cartId,shippingAddress})
+        checkoutMutate({ cartId, shippingAddress })
     }
+
+    const handleSubmit = () => {
+        const details = userDetails.current.value.trim();
+        const phone = userPhone.current.value.trim();
+        const city = userCity.current.value.trim();
+
+        if (!details || !phone || !city) {
+            toast.error("Please fill in all fields");
+            return;
+        }
+
+        handleCheckout();
+    };
 
     return (
         <>
@@ -234,12 +246,12 @@ export default function Cart() {
                             </Button>
                             <Modal.Backdrop>
                                 <Modal.Container>
-                                    <Modal.Dialog className="sm:max-w-[360px]">
+                                    <Modal.Dialog className="sm:max-w-[400px]">
                                         <Modal.CloseTrigger />
                                         <Modal.Header>
-                                            <Modal.Heading>Welcome to HeroUI</Modal.Heading>
+                                            <Modal.Heading>Fill your data</Modal.Heading>
                                         </Modal.Header>
-                                        <Modal.Body>
+                                        <Modal.Body className='py-2 px-1'>
                                             <TextField
                                                 isRequired
                                                 name="details"
@@ -247,7 +259,7 @@ export default function Cart() {
                                                 variant='secondary'
                                             >
                                                 <Label>Details</Label>
-                                                <Input ref={userDetails} placeholder="" />
+                                                <Input className={'focus:ring-emerald-500 focus:border-emerald-500'} ref={userDetails} placeholder="" />
                                                 <FieldError />
                                             </TextField>
                                             <TextField
@@ -257,7 +269,7 @@ export default function Cart() {
                                                 variant='secondary'
                                             >
                                                 <Label>Phone</Label>
-                                                <Input ref={userPhone} placeholder="" />
+                                                <Input className={'focus:ring-emerald-500 focus:border-emerald-500'} ref={userPhone} placeholder="" />
                                                 <FieldError />
                                             </TextField>
                                             <TextField
@@ -267,16 +279,17 @@ export default function Cart() {
                                                 variant='secondary'
                                             >
                                                 <Label>City</Label>
-                                                <Input ref={userCity} placeholder="" />
+                                                <Input className={'focus:ring-emerald-500 focus:border-emerald-500'} ref={userCity} placeholder="" />
                                                 <FieldError />
                                             </TextField>
                                         </Modal.Body>
                                         <Modal.Footer>
                                             <Button
-                                                className="w-full" slot="close"
-                                                onClick={()=>handleCheckout()}
+                                                className="w-full bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition duration-200 shadow-sm hover:shadow-md"
+                                                onClick={() => handleSubmit()}
                                             >
                                                 Continue
+                                                {checkoutISPending&&<BiLoader/>}
                                             </Button>
                                         </Modal.Footer>
                                     </Modal.Dialog>

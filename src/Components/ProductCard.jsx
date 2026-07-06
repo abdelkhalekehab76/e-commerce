@@ -52,7 +52,7 @@ export default function ProductCard({ product, wishlistIds }) {
     },
 
     onSuccess: () => {
-      toast.success("Added to Wishlist Successfully");
+      // toast.success("Added to Wishlist Successfully");
 
       queryClient.invalidateQueries({
         queryKey: ["wishlistProducts"],
@@ -79,9 +79,9 @@ export default function ProductCard({ product, wishlistIds }) {
 
     onSuccess: (data) => {
       console.log(data)
-      toast.success(`Removed from Wishlist Successfully`, {
-        icon: <BiTrash />
-      })
+      // toast.success(`Removed from Wishlist Successfully`, {
+      //   icon: <BiTrash />
+      // })
 
       queryClient.invalidateQueries({
         queryKey: ['wishlistProducts']

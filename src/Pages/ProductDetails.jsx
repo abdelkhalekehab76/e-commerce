@@ -7,20 +7,23 @@ import toast from "react-hot-toast";
 import { addToCart } from "../APIs/cart_APIs";
 import { BiHeart } from "react-icons/bi";
 import Loading from "../Components/Loading";
-import { addToWishlist } from "../APIs/wishlist";
+import { addToWishlist, getWishlist, removeFromWishlist } from "../APIs/wishlist";
 import { UserContext } from "../context/UserContext";
+import useCheckLogin from "../hooks/useCheckLogin";
+import { HiHeart } from "react-icons/hi";
 
 export default function ProductDetails() {
     const { productId } = useParams();
-
+    const checkLogin = useCheckLogin()
     const [showAllReviews, setShowAllReviews] = useState(false);
 
-    const {userToken} = useContext(UserContext)
+    const { userToken } = useContext(UserContext)
 
     const { data, isLoading } = useQuery({
         queryKey: ["specificProduct", productId],
         queryFn: () => getSpecificProduct(productId),
     });
+    const product = data?.data?.data;
 
     const { mutate: addToCartMutation } = useMutation({
         mutationFn: (productData) => {
@@ -45,30 +48,72 @@ export default function ProductDetails() {
         }
     });
 
-    const { mutate: addToWishlistMutation } = useMutation({
-        mutationFn: (productData)=>{
-            if(!userToken){
-                throw new Error('please login first')
-            }
+    const { data: wishListData, isLoading: wishlistIsLoading } = useQuery({
+        queryKey: ["wishlistProducts"],
+        queryFn: getWishlist,
+        enabled: !!userToken
+    });
+    const wishlistProducts = wishListData?.data?.data || [];
 
+    const wishlistIds = new Set(
+        wishlistProducts.map((item) => item._id) || []
+    );
+
+    const isInWishlist = wishlistIds?.has(product?._id);
+
+    const { mutate: addToWishlistMutation } = useMutation({
+        mutationFn: (productData) => {
             return addToWishlist(productData)
         },
 
-        onSuccess: () => {
+        onSuccess: (data) => {
+            console.log(data)
             toast.success("Added to Wishlist Successfully");
-
             queryClient.invalidateQueries({
                 queryKey: ["wishlistProducts"],
             });
         },
 
-        onError:(error)=>{
+        onError: (error) => {
             toast.error(error.message)
         }
     });
 
+    const handleAddToWishlist = (productData) => {
+        if (!checkLogin()) return;
 
-    const product = data?.data?.data;
+        addToWishlistMutation(productData)
+    }
+
+
+
+    const { mutate: removeFromWishlistMutation } = useMutation({
+        mutationFn: removeFromWishlist,
+
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({
+                queryKey: ['wishlistProducts'],
+            });
+            console.log(data)
+            toast.success(`Removed from Wishlist Successfully`)
+        }
+    });
+
+    const handleRemoveFromWishlist = (productData) => {
+        if (!checkLogin()) return;
+
+        removeFromWishlistMutation(productData)
+        console.log(productData)
+    }
+
+
+    console.log("wishlistProducts", wishlistProducts);
+    console.log("productId", product?._id);
+    console.log("isInWishlist", isInWishlist);
+    console.log(wishListData?.data.data);
+
+
+
 
     return (
         <>
@@ -175,16 +220,21 @@ export default function ProductDetails() {
                                 Add To Cart
                             </button>
 
-                            <button
-                                onClick={() =>
-                                    addToWishlistMutation({
-                                        productId: product._id,
-                                    })
-                                }
-                                className="p-3 border border-red-200 rounded-xl hover:bg-red-50 transition"
-                            >
-                                <BiHeart className="text-2xl text-red-500" />
-                            </button>
+                            {isInWishlist ? (
+                                <button
+                                    onClick={() => handleRemoveFromWishlist(product._id)}
+                                    className="p-3 border border-red-200 rounded-xl hover:bg-red-50 transition"
+                                >
+                                    <HiHeart className="text-2xl text-red-500" />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => handleAddToWishlist({ productId: product._id })}
+                                    className="p-3 border border-red-200 rounded-xl hover:bg-red-50 transition"
+                                >
+                                    <BiHeart className="text-2xl text-gray-400" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -219,7 +269,11 @@ export default function ProductDetails() {
                                                 </h3>
 
                                                 <span className="text-sm text-gray-400">
-                                                    Verified Customer
+                                                    {new Date(review?.createdAt).toLocaleDateString("en-GB", {
+                                                        year: "numeric",
+                                                        month: "long",
+                                                        day: "numeric",
+                                                    })}
                                                 </span>
                                             </div>
 

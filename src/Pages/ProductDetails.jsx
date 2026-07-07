@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import React, { useContext, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getSpecificProduct } from "../APIs/products_ApIs";
+import { getProductReviews, getSpecificProduct } from "../APIs/products_ApIs";
 import { queryClient } from "../main";
 import toast from "react-hot-toast";
 import { addToCart } from "../APIs/cart_APIs";
@@ -11,6 +11,7 @@ import { addToWishlist, getWishlist, removeFromWishlist } from "../APIs/wishlist
 import { UserContext } from "../context/UserContext";
 import useCheckLogin from "../hooks/useCheckLogin";
 import { HiHeart } from "react-icons/hi";
+import ProductRating from "../Components/ProductRating";
 
 export default function ProductDetails() {
     const { productId } = useParams();
@@ -105,12 +106,20 @@ export default function ProductDetails() {
         removeFromWishlistMutation(productData)
         console.log(productData)
     }
-
-
     console.log("wishlistProducts", wishlistProducts);
     console.log("productId", product?._id);
     console.log("isInWishlist", isInWishlist);
     console.log(wishListData?.data.data);
+
+
+
+    const { data: productReviewData, isLoading: reviewIsLoading } = useQuery({
+        queryKey: ['productReviews', 'productId'],
+        queryFn: () => getProductReviews(productId)
+    })
+
+    console.log(productReviewData?.data.data, 'reviews')
+    const productReview = productReviewData?.data.data
 
 
 
@@ -241,22 +250,25 @@ export default function ProductDetails() {
 
                 {/* Reviews */}
                 <div className="mt-10 bg-white rounded-3xl shadow-md border border-gray-100 p-8">
+                    <ProductRating productId={product?._id} />
+                </div>
+                <div className="mt-10 bg-white rounded-3xl shadow-md border border-gray-100 p-8">
                     <div className="flex justify-between items-center mb-8">
                         <h2 className="text-3xl font-bold text-slate-800">
                             Customer Reviews
                         </h2>
 
                         <span className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full font-semibold">
-                            {product?.ratingsQuantity} Reviews
+                            {productReview?.length} Reviews
                         </span>
                     </div>
 
-                    {product?.reviews?.length ? (
+                    {productReview?.length ? (
                         <>
                             <div className="space-y-5">
                                 {(showAllReviews
-                                    ? product.reviews
-                                    : product.reviews.slice(0, 3)
+                                    ? productReview
+                                    : productReview.slice(0, 3)
                                 ).map((review) => (
                                     <div
                                         key={review._id}

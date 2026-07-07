@@ -16,6 +16,7 @@ import ProtectedRoute from './Layout/ProtectedRoute'
 import AuthProtectedRoute from './Layout/AuthProtectedRoute'
 import AllOrders from './Pages/AllOrders'
 import NotFound from './Pages/NotFound'
+import Register from './Pages/Register'
 
 export default function App() {
 
@@ -35,6 +36,7 @@ export default function App() {
         { path: "wish-list", element: <ProtectedRoute><Wishlist /></ProtectedRoute> },
         { path: "contact-us", element: <ContactUs /> },
         { path: "login", element: <AuthProtectedRoute><Login /></AuthProtectedRoute> },
+        { path: "register", element: <AuthProtectedRoute><Register /></AuthProtectedRoute> },
         { path: "allorders", element: <ProtectedRoute><AllOrders/></ProtectedRoute> },
         { path: "*", element: <NotFound/> },
       ]
